@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Databases HTML</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.5/css/dataTables.bootstrap5.css">
+    <style>
+        tfoot input {
+        width: 100%;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+        h1 {
+        color: rgba(0, 0, 0, 0.8);
+        font-family: "Playfair Display", Georgia, serif;
+        margin: 0 0 30px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+        body {
+        overflow-x: hidden; /* Prevents horizontal overflow */
+        overflow-y: auto;   /* Allows vertical scrolling if necessary */
+    }
+        .toggle h1 {
+        font-size: 25px;
+    }
+        .toggle a {
+        font-size: 15px;
+    }
+        
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Datatables Library</h1>
+    </div>
+    <div class="toggle">
+        <h1>Toggle column: <a class="toggle-vis btn btn-outline-primary" data-column="0">Name</a> - <a class="toggle-vis btn btn-outline-primary" data-column="1">Position</a> - <a class="toggle-vis btn btn-outline-primary" data-column="2">Office</a> - <a class="toggle-vis btn btn-outline-primary" data-column="3">Extn.</a> - <a class="toggle-vis btn btn-outline-primary" data-column="4">Start date</a> - <a class="toggle-vis btn btn-outline-primary" data-column="5">Salary</a> - <a class="toggle-vis btn btn-outline-primary" data-column="6">Nationality</a></h1>
+    </div>
+    <table id="example" class="display table table-striped" style="width:100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Office</th>
+                <th>Extn.</th>
+                <th>Start date</th>
+                <th>Salary</th>
+                <th>Nationality</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Office</th>
+                <th>Extn.</th>
+                <th>Start date</th>
+                <th>Salary</th>
+                <th>Nationality</th>
+            </tr>
+        </tfoot>
+    </table>
+    <div class="d-flex justify-content-end mt-1">
+        <button id="button" class="btn btn-danger">Delete Selected Row</button>
+    </div> 
+    <!-- <button id="button" class="btn btn-danger">Delete Selected Row</button> -->
+</body>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/2.1.5/js/dataTables.js"></script>
+<script src="https://cdn.datatables.net/2.1.5/js/dataTables.bootstrap5.js"></script>
+<script>
+    $(document).ready(function() {
+        var table = $('#example').DataTable({
+            ajax: {
+                url: 'arrays.txt',
+                dataSrc: 'data' // Points to the "data" array in your JSON
+            },
+            dom: '<"row justify-content-center"<"col-sm-12 col-md-auto"p>>' + // Pagination in the top middle
+                 '<"row"<"col-sm-12"rt>>' + // Table
+                 '<"row display: inline-block"<"col-sm-6"l>>' + // Bottom (left: page length)
+                 '<"row"<"col-sm-6"i>>', // Info below page length
+            paging: true,
+            lengthChange: true,
+            info: true,
+            columns: [
+                { title: 'Name', data: 0 },
+                { title: 'Position', data: 1 },
+                { title: 'Office', data: 2 },
+                { title: 'Extn.', data: 3 },
+                { title: 'Start date', data: 4 },
+                { title: 'Salary', data: 5 },
+                { title: 'Nationality', data: 6 }
+            ]
+            , initComplete: function () {
+                this.api()
+                    .columns()
+                    .every(function () {
+                        let column = this;
+                        let title = column.footer().textContent;
+        
+                        // Create input element
+                        let input = document.createElement('input');
+                        input.placeholder = title;
+                        column.footer().replaceChildren(input);
+        
+                        // Event listener for user input
+                        input.addEventListener('keyup', () => {
+                            if (column.search() !== this.value) {
+                                column.search(input.value).draw();
+                            }
+                        });
+                    });
+            }
+        });
+        // Add row selection logic
+        $('#example tbody').on('click', 'tr', function () {
+            $(this).toggleClass('selected');
+        });
+
+        // Remove selected row when button is clicked
+        $('#button').click(function () {
+            table.row('.selected').remove().draw(false);
+        });
+        // Toggle column visibility
+        $('a.toggle-vis').on('click', function (e) {
+            e.preventDefault();
+            var columnIdx = $(this).data('column');
+            var column = table.column(columnIdx);
+            column.visible(!column.visible());
+        });
+    });
+</script>
+</html>
